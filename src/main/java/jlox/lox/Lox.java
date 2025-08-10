@@ -16,6 +16,10 @@ import java.util.Scanner;
     // runPrompt :  interactive, we can enter and execute teh code one line at a time
 
 // it’s good engineering practice to separate the code that generates the errors from the code that reports them.
+
+// The lexemes are only the raw substrings of the source code.
+// When we take the lexeme and bundle it together with that other data, the result is a token.
+
 public class Lox{
 
     // to indicate if an error has occured
