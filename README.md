@@ -114,4 +114,3 @@ First half of the book is implementing lox using java, the second is doing the s
 * Extremely minimal.
 * **`print`**: A built-in statement to display output.
 * **`clock()`**: A built-in function that returns the number of seconds since the program started.
-## jlox

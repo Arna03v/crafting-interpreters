@@ -75,6 +75,47 @@ class Scanner {
             case ';': addToken(SEMICOLON); break;
             case '*': addToken(STAR); break;
 
+            // operators
+            case '!':
+                addToken(match('=') ? BANG_EQUAL : BANG);
+                break;
+            case '=':
+                addToken(match('=') ? EQUAL_EQUAL : EQUAL);
+                break;
+            case '<':
+                addToken(match('=') ? LESS_EQUAL : LESS);
+                break;
+            case '>':
+                addToken(match('=') ? GREATER_EQUAL : GREATER);
+                break;
+
+            case '/' : // needs some special handling because even comments begin with "//"
+                if (match('/')) {
+                    // A comment goes until the end of the line.
+                    while (peek() != '\n' && !isAtEnd()) advance();
+                } else {
+                    addToken(SLASH);
+                }
+                break;
+
+            // now to ignore the useless charcters
+            case ' ':
+            case '\r':
+            case '\t':
+                // Ignore whitespace. Start a new lexeme scan
+                break;
+
+            case '\n':
+                // start a new lexeme scan AND increment the line we will be scanning
+                line++;
+                break;
+
+            // now lets handle strings
+            // strings always start with a souble quotation mark
+            case '"' :
+                string(); // does all the processing
+                break;
+
             // what if there is a character that is not supported by our interpreter
             default:
                 Lox.error(line, "Unexpected character -> " + c + ".");
@@ -99,5 +140,50 @@ class Scanner {
     private void addToken(TokenType type, String value) {
         String text = source.substring(start, current); // get the entire lexeme being processed currently
         tokens.add(new Token(type, text, value, line));
+    }
+
+    // we are going to use a match function to check one character ahead for cases like !=, ==, and so on
+    private boolean match(char expected){
+        // edge case : at the end of the file
+        if(isAtEnd()) return false;
+
+        if(source.charAt(current) != expected) return false;
+
+        // ohterwise consume the character and return true
+        current++;
+        return true;
+    }
+
+    // helper to find comments
+    // It lets the scanner see what the next character is in the source code without actually consuming it or moving the current pointer forward.
+    private char peek() {
+        if (isAtEnd()) return '\0';
+        return source.charAt(current);
+    }
+
+    // processing strings
+    private void string(){
+        // go till the end of string
+        while(!isAtEnd() && peek() != '"'){
+            // what if it ends on a different line
+            if(peek() == '\n') line++;
+
+            advance(); // move ahead
+        }
+
+        // what if the string has not terminated
+        if(isAtEnd()) {
+            Lox.error(line, "Unterminated string.");
+            return;
+        }
+
+        // now we are the clsong double quotes
+        advance();
+
+        // now remove the double quotes from the string
+        String value = source.substring(start + 1, current - 1);
+
+        // add this token
+        addToken(STRING, value);
     }
 }
