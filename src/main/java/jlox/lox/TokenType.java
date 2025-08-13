@@ -85,5 +85,8 @@ enum TokenType {
     TRUE,
     WHILE,
 
+    // variables
+    VAR,
+
     EOF
 }

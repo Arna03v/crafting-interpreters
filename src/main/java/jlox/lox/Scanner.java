@@ -1,7 +1,9 @@
 package jlox.lox;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static jlox.lox.TokenType.*;
 
@@ -24,6 +26,31 @@ class Scanner {
     private int start = 0; // first character of the lexeme being scanned
     private int current = 0; // which character of the lexeme is being scanned
     private int line = 1; // on which line
+
+    // defining keywords in Lox
+    private static final Map<String, TokenType> keywords;
+
+    // defining static variables
+    static {
+        keywords = new HashMap<>();
+        keywords.put("and",    AND);
+        keywords.put("class",  CLASS);
+        keywords.put("else",   ELSE);
+        keywords.put("false",  FALSE);
+        keywords.put("for",    FOR);
+        keywords.put("fun",    FUN);
+        keywords.put("if",     IF);
+        keywords.put("nil",    NIL);
+        keywords.put("or",     OR);
+        keywords.put("print",  PRINT);
+        keywords.put("return", RETURN);
+        keywords.put("super",  SUPER);
+        keywords.put("this",   THIS);
+        keywords.put("true",   TRUE);
+        keywords.put("var",    VAR);
+        keywords.put("while",  WHILE);
+
+    }
 
     // constructor
     Scanner(String source) {
@@ -116,10 +143,24 @@ class Scanner {
                 string(); // does all the processing
                 break;
 
+            // parsing numbers
+            // OR
+            // parsing identifier : any literal that begins with a underscore or a letter is an identifier
+            // OR
             // what if there is a character that is not supported by our interpreter
             default:
-                Lox.error(line, "Unexpected character -> " + c + ".");
-                break;
+                if(isDigit(c)) {
+                    number();
+                } else if (isAlpha(c)){
+                    identifier();
+
+                    // now identifiers also includes keywords like and, or, etc
+                    // once we have parsed it as an identifier, we will validate if it is a reserved keyword
+                } else {
+                    Lox.error(line, "Unexpected character -> " + c + ".");
+                    break;
+                }
+
         }
 
 
@@ -177,7 +218,7 @@ class Scanner {
             return;
         }
 
-        // now we are the clsong double quotes
+        // now we are the closing double quotes
         advance();
 
         // now remove the double quotes from the string
@@ -185,5 +226,71 @@ class Scanner {
 
         // add this token
         addToken(STRING, value);
+    }
+
+    // checking if the number is a digit
+    private boolean isDigit(char c){
+        return c >= '0' && c <= '9';
+    }
+
+    // parsing numbers
+    private void number(){
+        // we want to move forward to till we find numbers
+        // we want to not allow numbers like 123.2.322121.2.1212
+        // so we will only allow decimal point once
+        boolean found_decimal = false;
+
+        while(isDigit(peek())){
+            advance();
+        }
+        // now we might be at a decimal point
+        if(peek() == '.' && !found_decimal && isDigit(peekNext())){
+            found_decimal = true;
+            advance();
+
+            // now keep advancing until the next digit is peek
+            while(isDigit(peek())){
+                advance();
+            }
+        }
+
+        addToken(NUMBER, String.valueOf(Double.parseDouble(source.substring(start, current))));
+    }
+
+    private char peekNext() {
+        if (current + 1 >= source.length()) return '\0';
+        return source.charAt(current + 1);
+    }
+
+    // loweer case
+    // or upper case
+    // or underscore
+    private boolean isAlpha(char c) {
+        return (c >= 'a' && c <= 'z') ||
+                (c >= 'A' && c <= 'Z') ||
+                c == '_';
+    }
+
+    private void identifier(){
+        // peek while it is a letter
+        while(isAlphaNumeric(peek())){
+            advance();
+        }
+
+        // now check if the idenitfier is a reserved keyword
+        String text = source.substring(start, current);
+        TokenType type = keywords.get(text);
+
+        if(text == null){
+            // this is not a reserved keyword
+            addToken(IDENTIFIER);
+        }
+
+        addToken(type);
+    }
+
+    // alphanumeric is just alpha or digit
+    private boolean isAlphaNumeric(char c) {
+        return isAlpha(c) || isDigit(c);
     }
 }

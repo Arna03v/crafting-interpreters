@@ -22,10 +22,11 @@ package jlox.lox;
 * literal is only used when the lexeme represents a data value
  *  */
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-@RequiredArgsConstructor
+
 public class Token {
 
     final TokenType type; // is an enum
@@ -33,7 +34,14 @@ public class Token {
     final Object literal;
     final int line;
 
+    Token(TokenType type, String lexeme, Object literal, int line) {
+        this.type = type;
+        this.lexeme = lexeme;
+        this.literal = literal;
+        this.line = line;
+    }
+
     public String toString() {
-        return type + " " + lexeme + " " + literal;
+        return "Token type: " + type + "-> " + "Lexeme: " + lexeme + "-> " + "Literal: " + literal + "-> " + "Line: " + line;
     }
 }

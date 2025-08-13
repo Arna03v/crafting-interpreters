@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Scanner;
+//import java.util.Scanner;
 
 // let's define the lox class
 // there are 2 ways to run the interpreter
